@@ -1,11 +1,7 @@
-export const config = { runtime: 'edge' };
-
-export default async function handler(req: Request) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const token = process.env.NOTION_TOKEN;
@@ -13,13 +9,10 @@ export default async function handler(req: Request) {
   const titleProp = process.env.NOTION_TITLE_PROP ?? '이름';
 
   if (!token || !databaseId) {
-    return new Response(JSON.stringify({ error: 'Notion 환경변수가 설정되지 않았습니다.' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(500).json({ error: 'Notion 환경변수가 설정되지 않았습니다.' });
   }
 
-  const { title, blocks } = await req.json();
+  const { title, blocks } = req.body;
 
   const notionRes = await fetch('https://api.notion.com/v1/pages', {
     method: 'POST',
@@ -38,8 +31,5 @@ export default async function handler(req: Request) {
   });
 
   const data = await notionRes.json();
-  return new Response(JSON.stringify(data), {
-    status: notionRes.status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return res.status(notionRes.status).json(data);
 }
