@@ -169,7 +169,7 @@ export default function VideoCreator() {
         setTimeout(() => setNotionStatus('idle'), 3000);
       } else {
         const err = await res.json();
-        alert(`Notion 저장 실패: ${err.message ?? JSON.stringify(err)}`);
+        alert(`Notion 저장 실패 (${res.status}): ${err.message ?? err.error ?? JSON.stringify(err)}`);
         setNotionStatus('error');
       }
     } catch {
