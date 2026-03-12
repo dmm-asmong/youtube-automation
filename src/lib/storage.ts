@@ -113,27 +113,4 @@ export const historyStore = {
   },
 };
 
-// ── Notion Settings ───────────────────────────────────────────
-const NOTION_KEY = 'yta_notion';
-
-export interface NotionSettings {
-  token: string;
-  databaseId: string;
-  titleProp: string;
-}
-
-export const notionStore = {
-  get: (): NotionSettings => {
-    try {
-      const raw = localStorage.getItem(NOTION_KEY);
-      return raw ? JSON.parse(raw) : { token: '', databaseId: '', titleProp: '이름' };
-    } catch {
-      return { token: '', databaseId: '', titleProp: '이름' };
-    }
-  },
-  save: (settings: NotionSettings): void => {
-    localStorage.setItem(NOTION_KEY, JSON.stringify(settings));
-  },
-};
-
 export { genId };

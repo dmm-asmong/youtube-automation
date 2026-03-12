@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { channelStore, scriptStore, notionStore } from '../lib/storage';
+import { channelStore, scriptStore } from '../lib/storage';
 import { generateFlowScenes, generateImagePrompts } from '../lib/gemini';
 import type { ChannelProfile, Script, FlowScene } from '../types';
 
@@ -131,11 +131,6 @@ export default function VideoCreator() {
   }
 
   async function sendToNotion() {
-    const { token, databaseId, titleProp } = notionStore.get();
-    if (!token || !databaseId) {
-      alert('Notion 설정이 필요합니다. 채널 설정 페이지에서 토큰과 DB ID를 입력하세요.');
-      return;
-    }
     setNotionLoading(true);
     setNotionStatus('idle');
 
@@ -167,7 +162,7 @@ export default function VideoCreator() {
       const res = await fetch('/api/notion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, databaseId, titleProp, title: script?.videoTitle ?? '영상 프롬프트', blocks }),
+        body: JSON.stringify({ title: script?.videoTitle ?? '영상 프롬프트', blocks }),
       });
       if (res.ok) {
         setNotionStatus('success');

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { channelStore, notionStore } from '../lib/storage';
+import { channelStore } from '../lib/storage';
 import type { ChannelProfile } from '../types';
 
 const DEFAULT_CHANNELS: Omit<ChannelProfile, 'id' | 'createdAt'>[] = [
@@ -28,11 +28,6 @@ export default function ChannelSettings() {
   const [showForm, setShowForm] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const [notionToken, setNotionToken] = useState('');
-  const [notionDbId, setNotionDbId] = useState('');
-  const [notionTitleProp, setNotionTitleProp] = useState('이름');
-  const [notionSaved, setNotionSaved] = useState(false);
-
   useEffect(() => {
     const stored = channelStore.getAll();
     if (stored.length === 0) {
@@ -41,11 +36,6 @@ export default function ChannelSettings() {
     }
     setChannels(channelStore.getAll());
     setActiveId(channelStore.getActive());
-
-    const notion = notionStore.get();
-    setNotionToken(notion.token);
-    setNotionDbId(notion.databaseId);
-    setNotionTitleProp(notion.titleProp || '이름');
   }, []);
 
   function reload() {
@@ -98,12 +88,6 @@ export default function ChannelSettings() {
   function handleSetActive(id: string) {
     channelStore.setActive(id);
     setActiveId(id);
-  }
-
-  function handleNotionSave() {
-    notionStore.save({ token: notionToken.trim(), databaseId: notionDbId.trim(), titleProp: notionTitleProp.trim() || '이름' });
-    setNotionSaved(true);
-    setTimeout(() => setNotionSaved(false), 2000);
   }
 
   return (
@@ -182,58 +166,6 @@ export default function ChannelSettings() {
             <p>등록된 채널이 없습니다. 채널을 추가해보세요.</p>
           </div>
         )}
-      </div>
-
-      {/* Notion 연동 */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 mt-6">
-        <h2 className="font-bold text-gray-800 mb-1">Notion 연동 설정</h2>
-        <p className="text-sm text-gray-500 mb-4">
-          영상 제작 페이지에서 프롬프트를 Notion 데이터베이스로 바로 전송할 수 있습니다.{' '}
-          <a href="https://www.notion.so/my-integrations" target="_blank" rel="noopener noreferrer" className="text-purple-600 underline">
-            Integration 토큰 발급 →
-          </a>
-        </p>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Integration 토큰</label>
-            <input
-              type="password"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
-              placeholder="secret_..."
-              value={notionToken}
-              onChange={(e) => setNotionToken(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">데이터베이스 ID</label>
-            <input
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
-              placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-              value={notionDbId}
-              onChange={(e) => setNotionDbId(e.target.value)}
-            />
-            <p className="text-xs text-gray-400 mt-1">Notion 데이터베이스 URL에서 복사하세요 (notion.so/xxxxxxxx... 부분)</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">제목 속성명</label>
-            <input
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
-              placeholder="이름"
-              value={notionTitleProp}
-              onChange={(e) => setNotionTitleProp(e.target.value)}
-            />
-            <p className="text-xs text-gray-400 mt-1">데이터베이스의 제목(Title) 속성 이름 (기본값: 이름)</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleNotionSave}
-              className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-900 transition-colors"
-            >
-              저장
-            </button>
-            {notionSaved && <span className="text-sm text-green-600">✓ 저장되었습니다</span>}
-          </div>
-        </div>
       </div>
 
       {/* Form modal */}

@@ -8,7 +8,18 @@ export default async function handler(req: Request) {
     });
   }
 
-  const { token, databaseId, titleProp, title, blocks } = await req.json();
+  const token = process.env.NOTION_TOKEN;
+  const databaseId = process.env.NOTION_DATABASE_ID;
+  const titleProp = process.env.NOTION_TITLE_PROP ?? '이름';
+
+  if (!token || !databaseId) {
+    return new Response(JSON.stringify({ error: 'Notion 환경변수가 설정되지 않았습니다. Vercel 대시보드에서 NOTION_TOKEN, NOTION_DATABASE_ID를 추가하세요.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { title, blocks } = await req.json();
 
   const notionRes = await fetch('https://api.notion.com/v1/pages', {
     method: 'POST',
