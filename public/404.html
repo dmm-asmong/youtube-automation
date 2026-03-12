@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      const path = window.location.pathname.replace('/youtube-automation', '') || '/';
+      window.location.replace('/youtube-automation/?p=' + encodeURIComponent(path));
+    </script>
+  </head>
+</html>
