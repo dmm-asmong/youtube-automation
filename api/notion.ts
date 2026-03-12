@@ -1,8 +1,11 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+export const config = { runtime: 'edge' };
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: Request) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const token = process.env.NOTION_TOKEN;
@@ -10,10 +13,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const titleProp = process.env.NOTION_TITLE_PROP ?? '이름';
 
   if (!token || !databaseId) {
-    return res.status(500).json({ error: 'Notion 환경변수가 설정되지 않았습니다. Vercel 대시보드에서 NOTION_TOKEN, NOTION_DATABASE_ID를 추가하세요.' });
+    return new Response(JSON.stringify({ error: 'Notion 환경변수가 설정되지 않았습니다.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
-  const { title, blocks } = req.body as { title: string; blocks: unknown[] };
+  const { title, blocks } = await req.json();
 
   const notionRes = await fetch('https://api.notion.com/v1/pages', {
     method: 'POST',
@@ -32,5 +38,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   });
 
   const data = await notionRes.json();
-  return res.status(notionRes.status).json(data);
+  return new Response(JSON.stringify(data), {
+    status: notionRes.status,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
