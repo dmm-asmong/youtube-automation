@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { channelStore } from '../lib/storage';
+import { channelStore, apiKeyStore } from '../lib/storage';
 import type { ChannelProfile } from '../types';
 
 const DEFAULT_CHANNELS: Omit<ChannelProfile, 'id' | 'createdAt'>[] = [
@@ -27,15 +27,21 @@ export default function ChannelSettings() {
   const [editId, setEditId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState('');
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [apiKeySaved, setApiKeySaved] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
 
   useEffect(() => {
     const stored = channelStore.getAll();
     if (stored.length === 0) {
-      // 첫 실행: 기본 채널 자동 생성
       DEFAULT_CHANNELS.forEach((c) => channelStore.save(c));
     }
     setChannels(channelStore.getAll());
     setActiveId(channelStore.getActive());
+    const key = apiKeyStore.get();
+    setApiKey(key);
+    setApiKeyInput(key);
   }, []);
 
   function reload() {
@@ -80,6 +86,13 @@ export default function ChannelSettings() {
     reload();
   }
 
+  function handleSaveApiKey() {
+    apiKeyStore.set(apiKeyInput.trim());
+    setApiKey(apiKeyInput.trim());
+    setApiKeySaved(true);
+    setTimeout(() => setApiKeySaved(false), 2500);
+  }
+
   function handleDelete(id: string) {
     channelStore.delete(id);
     reload();
@@ -103,6 +116,50 @@ export default function ChannelSettings() {
         >
           + 채널 추가
         </button>
+      </div>
+
+      {/* API Key Section */}
+      <div className={`rounded-xl border-2 p-5 mb-6 ${apiKey ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}`}>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">{apiKey ? '🔑' : '⚠️'}</span>
+          <h2 className="font-bold text-gray-900">Gemini API 키</h2>
+          {apiKey && <span className="text-xs bg-green-200 text-green-800 px-2 py-0.5 rounded-full font-medium">설정됨</span>}
+          {!apiKey && <span className="text-xs bg-red-200 text-red-800 px-2 py-0.5 rounded-full font-medium">미설정 — AI 기능 사용 불가</span>}
+        </div>
+        <p className="text-xs text-gray-500 mb-3">
+          키는 이 기기의 브라우저에만 저장되며 외부로 전송되지 않습니다.{' '}
+          <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+            Google AI Studio
+          </a>
+          에서 무료로 발급받으세요.
+        </p>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <input
+              type={showApiKey ? 'text' : 'password'}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-400 pr-16"
+              placeholder="AIza..."
+              value={apiKeyInput}
+              onChange={(e) => setApiKeyInput(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowApiKey((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600"
+            >
+              {showApiKey ? '숨기기' : '보기'}
+            </button>
+          </div>
+          <button
+            onClick={handleSaveApiKey}
+            disabled={!apiKeyInput.trim()}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 ${
+              apiKeySaved ? 'bg-green-500 text-white' : 'bg-gray-900 text-white hover:bg-gray-700'
+            }`}
+          >
+            {apiKeySaved ? '✓ 저장됨' : '저장'}
+          </button>
+        </div>
       </div>
 
       {/* Channel list */}

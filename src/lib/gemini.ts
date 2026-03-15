@@ -1,8 +1,12 @@
 import { GoogleGenAI } from '@google/genai';
 import type { ChannelProfile, Topic, Script, FlowScene, ScriptSection, TitleOption } from '../types';
+import { apiKeyStore } from './storage';
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY ?? '';
-const ai = new GoogleGenAI({ apiKey });
+function getAI(): GoogleGenAI {
+  const apiKey = apiKeyStore.get();
+  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다. ⚙️ 채널 설정에서 Gemini API 키를 입력해주세요.');
+  return new GoogleGenAI({ apiKey });
+}
 
 const MODEL = 'gemini-2.5-flash';
 
@@ -46,7 +50,7 @@ Google 검색을 활용해서 다음을 분석하세요:
 주제를 8개 이상 생성하되, viralScore 기준으로 내림차순 정렬하세요.
 searchVolume은 '낮음'|'보통'|'높음'|'매우높음' 중 하나, trend는 '상승'|'유지'|'하락' 중 하나.`;
 
-  const response = await ai.models.generateContent({
+  const response = await getAI().models.generateContent({
     model: MODEL,
     contents: prompt,
     config: {
@@ -133,7 +137,7 @@ ${channel.targetAudience}을 대상으로 하는 "${channel.name}" 채널의 영
 ---
 대본을 지금 작성해주세요. 실제로 녹음할 수 있는 완성된 대본으로 써주세요.`;
 
-  const stream = await ai.models.generateContentStream({
+  const stream = await getAI().models.generateContentStream({
     model: MODEL,
     contents: prompt,
     config: { temperature: 0.85 },
@@ -236,7 +240,7 @@ Rules:
 - No text in images
 - 8~12 images total for the full video`;
 
-  const response = await ai.models.generateContent({
+  const response = await getAI().models.generateContent({
     model: MODEL,
     contents: prompt,
     config: { temperature: 0.6 },
@@ -290,7 +294,7 @@ ${sectionsText}
 - narration은 해당 씬에서 읽을 한국어 대본
 - duration은 "MM:SS~MM:SS" 형식`;
 
-  const response = await ai.models.generateContent({
+  const response = await getAI().models.generateContent({
     model: MODEL,
     contents: prompt,
     config: { temperature: 0.6, thinkingConfig: { thinkingBudget: 0 } },

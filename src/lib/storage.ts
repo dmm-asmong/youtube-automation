@@ -113,4 +113,11 @@ export const historyStore = {
   },
 };
 
+// ── API Key ───────────────────────────────────────────────────
+export const apiKeyStore = {
+  get: (): string => localStorage.getItem('yta_gemini_api_key') ?? '',
+  set: (key: string): void => localStorage.setItem('yta_gemini_api_key', key),
+  clear: (): void => localStorage.removeItem('yta_gemini_api_key'),
+};
+
 export { genId };
