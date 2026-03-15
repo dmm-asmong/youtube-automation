@@ -94,7 +94,7 @@ function Layout() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/youtube-automation">
       <Layout />
     </BrowserRouter>
   );
