@@ -90,7 +90,8 @@ export default function VideoCreator() {
         setImagePrompts(prompts);
       }
     } catch (e) {
-      setError('생성 중 오류가 발생했습니다.');
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(`생성 중 오류가 발생했습니다: ${msg}`);
       console.error(e);
     } finally {
       setLoading(false);

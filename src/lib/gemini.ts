@@ -256,7 +256,7 @@ export async function generateFlowScenes(
   sections: ScriptSection[],
 ): Promise<FlowScene[]> {
   const sectionsText = sections
-    .map((s, i) => `섹션 ${i + 1} [${s.label}]:\n${s.content}`)
+    .map((s, i) => `섹션 ${i + 1} [${s.label}]:\n${s.content.slice(0, 500)}`)
     .join('\n\n');
 
   const prompt = `당신은 Google Flow AI 영상 제작 전문가입니다.
@@ -293,13 +293,17 @@ ${sectionsText}
   const response = await ai.models.generateContent({
     model: MODEL,
     contents: prompt,
-    config: { temperature: 0.6 },
+    config: { temperature: 0.6, thinkingConfig: { thinkingBudget: 0 } },
   });
 
   const text = response.text ?? '';
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) return [];
 
-  const parsed = JSON.parse(jsonMatch[0]);
-  return parsed.scenes as FlowScene[];
+  try {
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed.scenes as FlowScene[];
+  } catch {
+    throw new Error(`JSON 파싱 실패: ${text.slice(0, 200)}`);
+  }
 }
