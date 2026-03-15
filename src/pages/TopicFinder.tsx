@@ -48,7 +48,8 @@ export default function TopicFinder() {
       const saved = topicStore.saveAll(channel.id, raw);
       setTopics(saved);
     } catch (e) {
-      setError('주제 발굴 중 오류가 발생했습니다. API 키를 확인해주세요.');
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(`오류: ${msg}`);
       console.error(e);
     } finally {
       setLoading(false);
